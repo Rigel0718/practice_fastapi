@@ -6,4 +6,4 @@ from sqlalchemy.orm import sessionmaker
 Base = declarative_base()
 
 engine = create_engine(DB_URL, echo=True, pool_recycle=900)
-Session_local = sessionmaker(autocommit=True, autoflush=True, bind=engine)
+Session_local = sessionmaker(autoflush=True, bind=engine)
