@@ -20,6 +20,13 @@ def get_db() -> Generator[Session, None, None]:
 
 
 class Base(DeclarativeBase):
+    def __init__(self):
+        pass
+
+    def all_columns(self):
+        return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
+
+
     @classmethod
     def get(cls: Type["Base"], session: Optional[Session], **kwargs):
         if session is None:
