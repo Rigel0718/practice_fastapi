@@ -14,6 +14,19 @@ class RegisterUserInform(BaseModel):
     email: EmailStr = None
     pw : str = None
 
+class UserToken(BaseModel):   # 이런 요소들을 Enum에서 한번에 관리해야겠다.. 중복했다가 실수할 확률 높음
+    id: int = None
+    name: str = None
+    email: str = None
+    pw: str = None
+    status: str = None
+
+    class Config:
+        orm_mode = True
+
+class Token(BaseModel):
+    Autorization: str = None
+
 async def is_email_exist_session(email: str)-> bool:
     obtained_email: Optional[str] = User.get(email=email)
 
@@ -33,4 +46,4 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
         JSONResponse(status_code=400, content=dict(msg="Email is already exist!!"))
         
     hashed_pw = await generated_pw_hashed(reg_user_info.pw)
-    new_added_user = User.build_and_add(session, email=reg_user_info.email, pw=hashed_pw)
+    new_added_user = User.build_and_add(session, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
