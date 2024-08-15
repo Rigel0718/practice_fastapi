@@ -20,6 +20,13 @@ def get_db() -> Generator[Session, None, None]:
 
 
 class Base(DeclarativeBase):
+    def __init__(self):
+        pass
+
+    def all_columns(self):
+        return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
+
+
     @classmethod
     def get(cls: Type["Base"], session: Optional[Session], **kwargs):
         if session is None:
@@ -37,6 +44,17 @@ class Base(DeclarativeBase):
         result = query.one_or_none
         
         return result
+    
+    @classmethod
+    def build_and_add(cls, session: Session, **kwargs):
+        obj = cls()
+        for column in obj.all_columns():
+            column_name = column.name
+            if column_name in kwargs:
+                setattr(obj, column_name, kwargs.get(column_name))
+        session.add(obj)
+        session.flush()
+        return obj
 
 class User(Base):
     __tablename__ = "users"
@@ -48,3 +66,8 @@ class User(Base):
 
 if __name__  == "__main__":
     Base.metadata.create_all(bind = engine)
+    with get_db() as session:
+        user_instance = User()
+        columns = user_instance.all_columns()
+        for c in columns:
+            print(c.name)
