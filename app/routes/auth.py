@@ -33,3 +33,4 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
         JSONResponse(status_code=400, content=dict(msg="Email is already exist!!"))
         
     hashed_pw = await generated_pw_hashed(reg_user_info.pw)
+    new_added_user = User.build_and_add(session, email=reg_user_info.email, pw=hashed_pw)
