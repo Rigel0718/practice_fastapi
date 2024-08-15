@@ -44,6 +44,17 @@ class Base(DeclarativeBase):
         result = query.one_or_none
         
         return result
+    
+    @classmethod
+    def build_and_add(cls, session: Session, **kwargs):
+        obj = cls()
+        for column in obj.all_columns():
+            column_name = column.name
+            if column_name in kwargs:
+                setattr(obj, column_name, kwargs.get(column_name))
+        session.add(obj)
+        session.flush()
+        return obj
 
 class User(Base):
     __tablename__ = "users"
