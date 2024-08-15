@@ -37,7 +37,6 @@ class Base(DeclarativeBase):
         result = query.one_or_none
         
         return result
-    pass
 
 class User(Base):
     __tablename__ = "users"
