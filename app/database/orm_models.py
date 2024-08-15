@@ -55,3 +55,8 @@ class User(Base):
 
 if __name__  == "__main__":
     Base.metadata.create_all(bind = engine)
+    with get_db() as session:
+        user_instance = User()
+        columns = user_instance.all_columns()
+        for c in columns:
+            print(c.name)
