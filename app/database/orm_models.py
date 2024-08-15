@@ -17,11 +17,15 @@ def get_db() -> Generator[Session, None, None]:
     finally:
         local_session.close()
 
+
+
 class Base(DeclarativeBase):
     @classmethod
     def get(cls: Type["Base"], session: Optional[Session], **kwargs):
-        # 조건에 맞는 row를 가져온다.
-        return
+        if session is None:
+            with get_db() as sess:
+                return cls._get_from_session(sess,**kwargs)
+        return cls._get_from_session(session,**kwargs)
     
     @classmethod
     def _get_from_session(cls: Type["Base"], session: Optional[Session], **kwargs):
