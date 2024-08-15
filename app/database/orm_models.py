@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Type, Optional
 from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, ForeignKey, String
 from db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
@@ -18,6 +18,21 @@ def get_db() -> Generator[Session, None, None]:
         local_session.close()
 
 class Base(DeclarativeBase):
+    @classmethod
+    def get(cls: Type["Base"], session: Optional[Session], **kwargs):
+        # 조건에 맞는 row를 가져온다.
+        return
+    
+    @classmethod
+    def _get_from_session(cls: Type["Base"], session: Optional[Session], **kwargs):
+        query = session.query(cls)
+        for key, value in kwargs.items():
+            column = getattr(cls, key)
+            query = query.filter(column==value)
+
+        result = query.one_or_none
+        
+        return result
     pass
 
 class User(Base):
