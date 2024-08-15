@@ -1,8 +1,21 @@
+from typing import Generator
 from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, ForeignKey, String
 from db_config import DB_URL 
-from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase
+from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
+from contextlib import contextmanager
+
 engine = create_engine(DB_URL, echo=True, pool_recycle=900)
 Session_local = sessionmaker(autoflush=True, bind=engine)
+
+
+@contextmanager
+def get_db() -> Generator[Session, None, None]:
+
+    try:
+        local_session = Session_local()
+        yield local_session
+    finally:
+        local_session.close()
 
 class Base(DeclarativeBase):
     pass
