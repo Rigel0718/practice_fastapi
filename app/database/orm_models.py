@@ -35,22 +35,6 @@ class Base(DeclarativeBase):
                 stmt = stmt.filter(column==value)
             result = await session.execute(stmt)
             return result.scalars().first()
-    # @classmethod
-    # def get(cls: Type["Base"], session: Optional[Session], **kwargs):
-    #     if session is None:
-    #         with get_db() as sess:
-    #             return cls._get_from_session(sess,**kwargs)
-    #     return cls._get_from_session(session,**kwargs)
-    
-    # @classmethod
-    # def _get_from_session(cls: Type["Base"], session: Optional[Session], **kwargs):
-    #     stmt = select(cls)
-    #     for key, value in kwargs.items():
-    #         column = getattr(cls, key)
-    #         stmt = stmt.filter(column==value)
-
-    #     result = session.execute(stmt)
-    #     return result.scalars().first()
     
     @classmethod
     async def build_and_add(cls: Type["Base"], **kwargs) -> "Base":
@@ -63,16 +47,6 @@ class Base(DeclarativeBase):
             session.add(obj)
             await session.flush() 
             return obj
-    # @classmethod
-    # def build_and_add(cls, session: Session, **kwargs):
-    #     obj = cls()
-    #     for column in obj.all_columns():
-    #         column_name = column.name
-    #         if column_name in kwargs:
-    #             setattr(obj, column_name, kwargs.get(column_name))
-    #     session.add(obj)
-    #     session.flush()
-    #     return obj
 
 class User(Base):
     __tablename__ = "users"
