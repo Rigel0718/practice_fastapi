@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database.orm_models import get_db, User
 from typing import bool, Optional
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel, ConfigDict
 from starlette.responses import JSONResponse
 from dotenv import load_dotenv
 import os
@@ -26,8 +26,7 @@ class UserToken(BaseModel):   # 이런 요소들을 Enum에서 한번에 관리�
     pw: str = None
     status: str = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
     Autorization_token: str = None
@@ -45,9 +44,10 @@ async def generated_pw_hashed(pw: str):
 def check_match_pw(hashed_pw, pw: str) -> bool:
     return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw)
 
-def create_auth_token(user_data: dict):
+def create_auth_token(user_data: dict) -> str:
     _encode = user_data.copy()
     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt_encode
 
 @router.post("/register", status_code=201, response_model=Token)
 async def register(reg_user_info: RegisterUserInform, session: Session = Depends(get_db)):
@@ -61,3 +61,7 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
     if not check_match_pw(hashed_pw, reg_user_info.pw):
         raise Exception("DO NOT Match encryped pw and normal pw")
     new_added_user = User.build_and_add(session, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
+    user_token_instance: UserToken = create_auth_token(UserToken.model_validate(new_added_user))
+    token_data: dict = user_token_instance.model_dump(exclude={'pw'})
+    token = dict( Authorization_token = f'Bearer {token_data}')
+    return token
