@@ -27,25 +27,25 @@ class Base(DeclarativeBase):
         return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
 
     @classmethod
-    async def get_by_column(cls: Type["Base"], **kwargs) -> Optional["Base"]:
-        async with get_db() as session:
+    def get_by_column(cls: Type["Base"], **kwargs) -> Optional["Base"]:
+        with get_db() as session:
             stmt = select(cls)
             for key, value in kwargs.items():
                 column = getattr(cls, key)
                 stmt = stmt.filter(column==value)
-            result = await session.execute(stmt)
+            result = session.execute(stmt)
             return result.scalars().first()
     
     @classmethod
-    async def build_and_add(cls: Type["Base"], **kwargs) -> "Base":
-        async with get_db() as session:
+    def build_and_add(cls: Type["Base"], **kwargs) -> "Base":
+        with get_db() as session:
             obj = cls()
             for column in obj.all_columns():
                 column_name = column.name
                 if column_name in kwargs:
                     setattr(obj, column_name, kwargs.get(column_name))
             session.add(obj)
-            await session.flush() 
+            session.flush() 
             return obj
 
 class User(Base):
