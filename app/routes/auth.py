@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database.orm_models import get_db, User
-from typing import bool, Optional
+from typing import Optional
 from pydantic import EmailStr, BaseModel, ConfigDict
 from starlette.responses import JSONResponse
 from dotenv import load_dotenv
@@ -31,8 +31,8 @@ class UserToken(BaseModel):   # 이런 요소들을 Enum에서 한번에 관리�
 class Token(BaseModel):
     Autorization_token: str = None
 
-async def is_email_exist_session(email: str)-> bool:
-    obtained_email: Optional[str] = User.get(email=email)
+async def is_email_exist_session(session: Session, email: str)-> bool:
+    obtained_email: Optional[str] = User.get(session=session,email=email)
 
     if obtained_email is None:
         return False
@@ -51,7 +51,7 @@ def create_auth_token(user_data: dict) -> str:
 
 @router.post("/register", status_code=201, response_model=Token)
 async def register(reg_user_info: RegisterUserInform, session: Session = Depends(get_db)):
-    is_exist: bool = await is_email_exist_session(reg_user_info.email)
+    is_exist: bool = await is_email_exist_session(session,reg_user_info.email)
     if not reg_user_info.email or not reg_user_info.pw:
         JSONResponse(status_code=400, content=dict(msg="Email and pw NOT provided"))
     if is_exist:

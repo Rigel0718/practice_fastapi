@@ -1,6 +1,6 @@
 from typing import Generator, Type, Optional
 from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, ForeignKey, String
-from db_config import DB_URL 
+from database.db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
 from contextlib import contextmanager
 
@@ -16,7 +16,6 @@ def get_db() -> Generator[Session, None, None]:
         yield local_session
     finally:
         local_session.close()
-
 
 
 class Base(DeclarativeBase):
@@ -41,7 +40,7 @@ class Base(DeclarativeBase):
             column = getattr(cls, key)
             query = query.filter(column==value)
 
-        result = query.one_or_none
+        result = query.one_or_none()
         
         return result
     
