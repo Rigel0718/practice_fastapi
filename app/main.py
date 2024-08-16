@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from routes import auth
 import os, sys
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-print(os.path.abspath(os.path.dirname(__file__)))
+
 app = FastAPI()
 app.include_router(auth.router)
 @app.get("/")
