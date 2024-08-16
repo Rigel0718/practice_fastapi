@@ -4,9 +4,14 @@ from app.database.orm_models import get_db, User
 from typing import bool, Optional
 from pydantic import EmailStr, BaseModel
 from starlette.responses import JSONResponse
+from dotenv import load_dotenv
+import os
 import bcrypt
 import jwt
 
+load_dotenv(verbose=True)
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 router = APIRouter(prefix="/auth")
 
@@ -40,7 +45,9 @@ async def generated_pw_hashed(pw: str):
 def check_match_pw(hashed_pw, pw: str) -> bool:
     return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw)
 
-
+def create_auth_token(user_data: dict):
+    _encode = user_data.copy()
+    jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 @router.post("/register", status_code=201, response_model=Token)
 async def register(reg_user_info: RegisterUserInform, session: Session = Depends(get_db)):
