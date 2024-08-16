@@ -2,6 +2,7 @@ from typing import Generator, Type, Optional
 from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, ForeignKey, String
 from database.db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
+from sqlalchemy.future import select
 from contextlib import contextmanager
 
 engine = create_engine(DB_URL, echo=True, pool_recycle=900)
@@ -25,24 +26,31 @@ class Base(DeclarativeBase):
     def all_columns(self):
         return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
 
-
     @classmethod
-    def get(cls: Type["Base"], session: Optional[Session], **kwargs):
-        if session is None:
-            with get_db() as sess:
-                return cls._get_from_session(sess,**kwargs)
-        return cls._get_from_session(session,**kwargs)
+    async def get_by_column(cls: Type["Base"], **kwargs) -> Optional["Base"]:
+        async with get_db() as session:
+            stmt = select(cls)
+            for key, value in kwargs.items():
+                column = getattr(cls, key)
+                stmt = stmt.filter(column==value)
+            result = await session.execute(stmt)
+            return result.scalars().first()
+    # @classmethod
+    # def get(cls: Type["Base"], session: Optional[Session], **kwargs):
+    #     if session is None:
+    #         with get_db() as sess:
+    #             return cls._get_from_session(sess,**kwargs)
+    #     return cls._get_from_session(session,**kwargs)
     
-    @classmethod
-    def _get_from_session(cls: Type["Base"], session: Optional[Session], **kwargs):
-        query = session.query(cls)
-        for key, value in kwargs.items():
-            column = getattr(cls, key)
-            query = query.filter(column==value)
+    # @classmethod
+    # def _get_from_session(cls: Type["Base"], session: Optional[Session], **kwargs):
+    #     stmt = select(cls)
+    #     for key, value in kwargs.items():
+    #         column = getattr(cls, key)
+    #         stmt = stmt.filter(column==value)
 
-        result = query.one_or_none()
-        
-        return result
+    #     result = session.execute(stmt)
+    #     return result.scalars().first()
     
     @classmethod
     def build_and_add(cls, session: Session, **kwargs):
