@@ -30,7 +30,7 @@ class UserToken(BaseModel):   # 이런 요소들을 Enum에서 한번에 관리�
         orm_mode = True
 
 class Token(BaseModel):
-    Autorization: str = None
+    Autorization_token: str = None
 
 async def is_email_exist_session(email: str)-> bool:
     obtained_email: Optional[str] = User.get(email=email)
