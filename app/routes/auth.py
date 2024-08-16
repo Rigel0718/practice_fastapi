@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database.orm_models import get_db, User
+from database.orm_models import get_db, User
 from typing import bool, Optional
 from pydantic import EmailStr, BaseModel, ConfigDict
 from starlette.responses import JSONResponse
