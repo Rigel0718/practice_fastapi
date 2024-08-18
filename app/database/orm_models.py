@@ -38,7 +38,7 @@ class Base(DeclarativeBase):
             return result.scalars().first()
     
     @classmethod
-    def build_and_add(cls: Type["Base"], **kwargs) -> "Base":
+    def build_and_add(cls: Type[T], **kwargs) -> T:
         with get_db() as session:
             obj = cls()
             for column in obj.all_columns():
