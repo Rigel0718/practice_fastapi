@@ -33,7 +33,7 @@ class Token(BaseModel):
     Authorization_token: str 
 
 async def is_email_exist_session(email: str)-> bool:
-    obtained_email: Optional[str] = User.get_by_column(email=email)
+    obtained_email: Optional[str] = orm_models.User.get_by_column(email=email)
 
     if obtained_email is None:
         return False
