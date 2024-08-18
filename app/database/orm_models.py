@@ -38,6 +38,13 @@ class Base(DeclarativeBase):
         return result.scalars().first()
     
     @classmethod
+    def get_by_email(cls: Type[T], session: Session, email: str) -> Optional[T]:
+        stmt = select(cls).filter_by(column==email)
+        column = getattr(cls, 'email')
+        result = session.execute(stmt)
+        return result.scalars().first()
+    
+    @classmethod
     def build_and_add(cls: Type[T], session: Session,**kwargs) -> T:
         obj = cls()
         for column in obj.all_columns():

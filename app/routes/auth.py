@@ -67,3 +67,12 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
     user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
     return token
+
+@router.post("/login", status_code=200, response_model=Token)
+async def login(user_info: RegisterUserInform, session: Session = Depends(get_db)):
+    is_exist: bool = await is_email_exist_session(session, user_info.email)
+    if not user_info.email or not user_info.pw:
+        raise HTTPException(status_code=400 , detail="")
+    if not is_exist:
+        raise HTTPException(status_code=400, detail="")
+    user = orm_models.User.get_by_email(session=session, email=user_info.email)    
