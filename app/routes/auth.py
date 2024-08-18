@@ -71,12 +71,12 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
 async def login(user_info: RegisterUserInform, session: Session = Depends(get_db)):
     is_exist: bool = await is_email_exist_session(session, user_info.email)
     if not user_info.email or not user_info.pw:
-        raise HTTPException(status_code=400 , detail="")
+        raise HTTPException(status_code=400 , detail="Email and PW must be provied")
     if not is_exist:
-        raise HTTPException(status_code=400, detail="")
+        raise HTTPException(status_code=400, detail="No Match Users")
     user: Optional[orm_models.User] = orm_models.User.get_by_email(session=session, email=user_info.email) 
     if not check_match_pw(hashed_pw=user.pw, pw=user_info.pw):
-        raise HTTPException(status_code=401, detail="Mismatch between encryped pw and normal pw")
+        raise HTTPException(status_code=401, detail="No Match Users")
     usertoken_model : UserToken = UserToken.model_validate(user)
     user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
