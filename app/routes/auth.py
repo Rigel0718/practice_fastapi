@@ -61,11 +61,7 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
     if not check_match_pw(hashed_pw, reg_user_info.pw):
         raise Exception("DO NOT Match encryped pw and normal pw")
     new_added_user : User = User.build_and_add(email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
-    print(f'new_added_user :  {new_added_user}', type(new_added_user), sep='\n')
     usertoken_model = UserToken.model_validate(new_added_user)
     user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
-    print(user_token_instance, type(user_token_instance))
-    # token_data: dict = user_token_instance.model_dump(exclude={'pw'})
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
-    print(token)
     return token
