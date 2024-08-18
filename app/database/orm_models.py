@@ -11,9 +11,8 @@ Session_local = sessionmaker(autoflush=True, bind=engine)
 
 @contextmanager
 def get_db() -> Generator[Session, None, None]:
-
+    local_session = Session_local()
     try:
-        local_session = Session_local()
         yield local_session
     finally:
         local_session.close()
