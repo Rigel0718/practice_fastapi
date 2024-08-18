@@ -21,9 +21,9 @@ class RegisterUserInform(BaseModel):
 
 class UserToken(BaseModel):   # 이런 요소들을 Enum에서 한번에 관리해야겠다.. 중복했다가 실수할 확률 높음
     id: int = None
-    name: str = None
-    email: str = None
-    pw: str = None
+    name: Optional[str] = None
+    email: Optional[str] = None
+    pw: Optional[str] = None
     status: str = None
 
     model_config = ConfigDict(from_attributes=True)
