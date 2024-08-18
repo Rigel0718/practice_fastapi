@@ -50,11 +50,11 @@ class Base(DeclarativeBase):
                     setattr(obj, column_name, kwargs.get(column_name))
             session.add(obj)
             session.flush() 
-            try:
-                session.commit()
-            except Exception as e:
-                session.rollback()
-                print(f"Error: {e}")
+            # try:
+            #     session.commit()
+            # except Exception as e:
+            #     session.rollback()
+            #     print(f"Error: {e}")
             return obj
 
 class User(Base):
