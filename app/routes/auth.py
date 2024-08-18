@@ -39,7 +39,7 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
         return False
     return True
 
-async def generated_pw_hashed(pw: str):
+def generated_pw_hashed(pw: str):
     return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
 
 def check_match_pw(hashed_pw, pw: str) -> bool:
@@ -58,7 +58,7 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
     if is_exist:
         JSONResponse(status_code=400, content=dict(msg="Email is already exist!!"))
         
-    hashed_pw = await generated_pw_hashed(reg_user_info.pw)
+    hashed_pw = generated_pw_hashed(reg_user_info.pw)
     if not check_match_pw(hashed_pw, reg_user_info.pw):
         raise HTTPException(status_code=401, detail="Mismatch between encryped pw and normal pw")
     new_added_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
