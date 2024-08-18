@@ -54,9 +54,9 @@ def create_auth_token(user_data: dict) -> str:
 async def register(reg_user_info: RegisterUserInform, session: Session = Depends(get_db)):
     is_exist: bool = await is_email_exist_session(session, reg_user_info.email)
     if not reg_user_info.email or not reg_user_info.pw:
-        JSONResponse(status_code=400, content=dict(msg="Email and pw NOT provided"))
+        HTTPException(status_code=400, detail="Email and pw NOT provided")
     if is_exist:
-        JSONResponse(status_code=400, content=dict(msg="Email is already exist!!"))
+        HTTPException(status_code=400, detail="Email is already exist!!")
         
     hashed_pw = generated_pw_hashed(reg_user_info.pw)
     
