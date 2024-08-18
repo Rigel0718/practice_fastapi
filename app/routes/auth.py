@@ -42,7 +42,7 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
 def generated_pw_hashed(pw: str):
     return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
 
-def check_match_pw(hashed_pw, pw: str) -> bool:
+def check_match_pw(hashed_pw: str, pw: str) -> bool:
     return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw)
 
 def create_auth_token(user_data: dict) -> str:
@@ -59,8 +59,7 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
         JSONResponse(status_code=400, content=dict(msg="Email is already exist!!"))
         
     hashed_pw = generated_pw_hashed(reg_user_info.pw)
-    if not check_match_pw(hashed_pw, reg_user_info.pw):
-        raise HTTPException(status_code=401, detail="Mismatch between encryped pw and normal pw")
+    
     new_added_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : UserToken = UserToken.model_validate(new_added_user)
     session.commit()
@@ -75,4 +74,10 @@ async def login(user_info: RegisterUserInform, session: Session = Depends(get_db
         raise HTTPException(status_code=400 , detail="")
     if not is_exist:
         raise HTTPException(status_code=400, detail="")
-    user = orm_models.User.get_by_email(session=session, email=user_info.email)    
+    user: Optional[orm_models.User] = orm_models.User.get_by_email(session=session, email=user_info.email) 
+    if not check_match_pw(hashed_pw=user.pw, pw=user_info.pw):
+        raise HTTPException(status_code=401, detail="Mismatch between encryped pw and normal pw")
+    usertoken_model : UserToken = UserToken.model_validate(user)
+    user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
+    token = Token(Authorization_token=f'Bearer {user_token_instance}')
+    return token
