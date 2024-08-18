@@ -1,4 +1,4 @@
-from typing import Generator, Type, Optional
+from typing import Generator, Type, Optional, TypeVar
 from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, ForeignKey, String
 from database.db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
@@ -18,6 +18,7 @@ def get_db() -> Generator[Session, None, None]:
     finally:
         local_session.close()
 
+T = TypeVar("T", bound="Base")
 
 class Base(DeclarativeBase):
     def __init__(self):
