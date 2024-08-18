@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.orm_models import get_db
 from database import orm_models
@@ -60,7 +60,7 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
         
     hashed_pw = await generated_pw_hashed(reg_user_info.pw)
     if not check_match_pw(hashed_pw, reg_user_info.pw):
-        raise Exception("DO NOT Match encryped pw and normal pw")
+        raise HTTPException(status_code=401, detail="Mismatch between encryped pw and normal pw")
     new_added_user : orm_models.User = orm_models.User.build_and_add(email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : UserToken = UserToken.model_validate(new_added_user)
     user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
