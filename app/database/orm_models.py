@@ -1,8 +1,10 @@
 from typing import Generator, Type, Optional, TypeVar
 from sqlalchemy import create_engine, Integer, Text, Enum, Boolean, ForeignKey, String
-from database.db_config import DB_URL 
+from db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session, mapped_column
 from sqlalchemy.future import select
+import sys
+from os import path
 # TODO 
 # future module is legacy ... so change it to sqlalchemy 2.0 
 from contextlib import contextmanager
@@ -48,6 +50,11 @@ class Base(DeclarativeBase):
                     setattr(obj, column_name, kwargs.get(column_name))
             session.add(obj)
             session.flush() 
+            try:
+                session.commit()
+            except Exception as e:
+                session.rollback()
+                print(f"Error: {e}")
             return obj
 
 class User(Base):
@@ -59,9 +66,17 @@ class User(Base):
     status : Mapped[str] = mapped_column(Enum("active", "blocked", "deleted"), default="active")
 
 if __name__  == "__main__":
-    Base.metadata.create_all(bind = engine)
+    app_dir_path = path.dirname(path.dirname(path.abspath(__file__)))
+    sys.path.append(app_dir_path)
+    # Base.metadata.drop_all(bind=engine, tables=[User.__table__])
+    with engine.begin() as conn:
+        Base.metadata.create_all(bind = engine)
+    example_users = [
+        {"name": "SSS", "email": "alice@example.com", "pw": "hashed_password_1"},
+        {"name": "KKK", "email": "bob@example.com", "pw": "hashed_password_2"},
+        {"name": "UUUU", "email": "charlie@example.com", "pw": "hashed_password_3"}
+    ]
     with get_db() as session:
-        user_instance = User()
-        columns = user_instance.all_columns()
-        for c in columns:
-            print(c.name)
+        for user_info in example_users:
+            User.build_and_add(**user_info)
+        
