@@ -28,7 +28,7 @@ class Base(DeclarativeBase):
         return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
 
     @classmethod
-    def get_by_column(cls: Type["Base"], **kwargs) -> Optional["Base"]:
+    def get_by_column(cls: Type[T], **kwargs) -> Optional[T]:
         with get_db() as session:
             stmt = select(cls)
             for key, value in kwargs.items():
