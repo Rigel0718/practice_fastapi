@@ -7,13 +7,11 @@ import sys
 from os import path
 # TODO 
 # future module is legacy ... so change it to sqlalchemy 2.0 
-from contextlib import contextmanager
 
 engine = create_engine(DB_URL, echo=True, pool_recycle=900)
 Session_local = sessionmaker(autoflush=True, bind=engine)
 
 
-@contextmanager
 def get_db() -> Generator[Session, None, None]:
     local_session = Session_local()
     try:
@@ -31,31 +29,26 @@ class Base(DeclarativeBase):
         return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
 
     @classmethod
-    def get_by_column(cls: Type[T], **kwargs) -> Optional[T]:
-        with get_db() as session:
-            stmt = select(cls)
-            for key, value in kwargs.items():
-                column = getattr(cls, key)
-                stmt = stmt.filter(column==value)
-            result = session.execute(stmt)
-            return result.scalars().first()
+    def get_by_column(cls: Type[T], session: Session,**kwargs) -> Optional[T]:
+        stmt = select(cls)
+        for key, value in kwargs.items():
+            column = getattr(cls, key)
+            stmt = stmt.filter(column==value)
+        result = session.execute(stmt)
+        return result.scalars().first()
     
     @classmethod
-    def build_and_add(cls: Type[T], **kwargs) -> T:
-        with get_db() as session:
-            obj = cls()
-            for column in obj.all_columns():
-                column_name = column.name
-                if column_name in kwargs:
-                    setattr(obj, column_name, kwargs.get(column_name))
-            session.add(obj)
-            session.flush() 
-            # try:
-            #     session.commit()
-            # except Exception as e:
-            #     session.rollback()
-            #     print(f"Error: {e}")
-            return obj
+    def build_and_add(cls: Type[T], session: Session,**kwargs) -> T:
+        obj = cls()
+        for column in obj.all_columns():
+            column_name = column.name
+            if column_name in kwargs:
+                setattr(obj, column_name, kwargs.get(column_name))
+        session.add(obj)
+        session.flush() 
+        return obj
+
+
 
 class User(Base):
     __tablename__ = "users"
