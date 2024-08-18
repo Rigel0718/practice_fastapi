@@ -39,8 +39,8 @@ class Base(DeclarativeBase):
     
     @classmethod
     def get_by_email(cls: Type[T], session: Session, email: str) -> Optional[T]:
-        stmt = select(cls).filter_by(column==email)
         column = getattr(cls, 'email')
+        stmt = select(cls).filter(column==email)
         result = session.execute(stmt)
         return result.scalars().first()
     

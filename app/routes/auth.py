@@ -43,7 +43,7 @@ def generated_pw_hashed(pw: str):
     return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
 
 def check_match_pw(hashed_pw: str, pw: str) -> bool:
-    return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw)
+    return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw.encode("utf-8"))
 
 def create_auth_token(user_data: dict) -> str:
     _encode = user_data.copy()
