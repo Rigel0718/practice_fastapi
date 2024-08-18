@@ -1,6 +1,6 @@
 from typing import Generator, Type, Optional, TypeVar
 from sqlalchemy import create_engine, Integer, Text, Enum, Boolean, ForeignKey, String
-from db_config import DB_URL 
+from database.db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session, mapped_column
 from sqlalchemy.future import select
 import sys
