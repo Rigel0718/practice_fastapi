@@ -1,7 +1,7 @@
 from typing import Generator, Type, Optional, TypeVar
 from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, ForeignKey, String
 from database.db_config import DB_URL 
-from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
+from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session, mapped_column
 from sqlalchemy.future import select
 # TODO 
 # future module is legacy ... so change it to sqlalchemy 2.0 
@@ -52,11 +52,11 @@ class Base(DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
-    id : Mapped[int] = Column(Integer, primary_key=True, index=True)
-    name : Mapped[str] = Column(String(255), nullable=True)
-    email : Mapped[str] = Column(String(255), nullable=True)
-    pw : Mapped[str] = Column(String(1000), nullable=True)
-    status : Mapped[str] = Column(Enum("active", "blocked", "deleted"), default="active")
+    id : Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    name : Mapped[str] = mapped_column(String(255), nullable=True)
+    email : Mapped[str] = mapped_column(String(255), nullable=True)
+    pw : Mapped[str] = mapped_column(String(1000), nullable=True)
+    status : Mapped[str] = mapped_column(Enum("active", "blocked", "deleted"), default="active")
 
 if __name__  == "__main__":
     Base.metadata.create_all(bind = engine)
