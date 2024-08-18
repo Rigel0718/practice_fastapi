@@ -3,6 +3,8 @@ from sqlalchemy import create_engine, Column, Integer, Text, Enum, Boolean, Fore
 from database.db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session
 from sqlalchemy.future import select
+# TODO 
+# future module is legacy ... so change it to sqlalchemy 2.0 
 from contextlib import contextmanager
 
 engine = create_engine(DB_URL, echo=True, pool_recycle=900)
