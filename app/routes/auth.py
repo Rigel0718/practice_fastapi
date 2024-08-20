@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security.oauth2 import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database.orm_models import get_db, UserORM
 from typing import Optional, Annotated
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
 import jwt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 load_dotenv(verbose=True)
@@ -18,6 +18,7 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 router = APIRouter(prefix="/auth", tags=['auth'])
 
 class RegisterUserInform(BaseModel):
+    name : str
     email: EmailStr = None
     pw : str = None
 
@@ -33,7 +34,7 @@ class User(BaseModel):
 
 class Token(BaseModel):
     Authorization_token: str 
-    token_type : str
+    token_type : str = "bearer"
 
 async def is_email_exist_session(session: Session, email: str)-> bool:
     obtained_email: Optional[str] = UserORM.get_by_column(session=session, email=email)
@@ -42,7 +43,6 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
     return True
 
 pwd_context = CryptContext(schemes=["bcrypt"])
-oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def generated_pw_hashed(plain_pw: str) -> str:
     return pwd_context.hash(plain_pw)
@@ -53,8 +53,10 @@ def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
 def orm2schema(new_user: UserORM) -> User:
     return User.model_validate(new_user)
 
-def create_auth_token(user_data: User) -> str:
+def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minutes=15)) -> str:
     _user_data_dict = user_data.model_dump(exclude={'pw'})
+    expire_time = datetime.now(timezone.utc) + expiered_delta
+    _user_data_dict.update({"exp" : expire_time})
     _encode = _user_data_dict.copy()
     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return jwt_encode
@@ -67,8 +69,8 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
     if is_exist:
         HTTPException(status_code=400, detail="Email is already exist!!")
         
-    hashed_pw = CryptContext(reg_user_info.pw)
-    new_user : UserORM = UserORM.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
+    hashed_pw = generated_pw_hashed(reg_user_info.pw)
+    new_user : UserORM = UserORM.build_and_add(session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : User = orm2schema(new_user)
     session.commit()
     user_token_instance: str = create_auth_token(usertoken_model)
@@ -76,14 +78,16 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
     return token
 
 @router.post("/login", status_code=200, response_model=Token)
-async def login(user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
-    is_exist: bool = await is_email_exist_session(session, user_info.email)
-    if not user_info.email or not user_info.pw:
+async def login(user_info: Annotated[OAuth2PasswordRequestForm, Depends()], session: Annotated[Session, Depends(get_db)]):
+    entered_email = user_info.username
+    entered_pw = user_info.password
+    is_exist: bool = await is_email_exist_session(session, entered_email)
+    if not entered_email or not entered_pw:
         raise HTTPException(status_code=400 , detail="Email and PW must be provied")
     if not is_exist:
         raise HTTPException(status_code=400, detail="No Match Users")
-    user: Optional[UserORM] = UserORM.get_by_email(session=session, email=user_info.email) 
-    if not check_match_pw(hashed_pw=user.pw, pw=user_info.pw):
+    user: Optional[UserORM] = UserORM.get_by_email(session=session, email=entered_email) 
+    if not check_match_pw(hashed_pw=user.pw, plain_pw=entered_pw):
         raise HTTPException(status_code=401, detail="No Match Users")
     
     usertoken_model: User = orm2schema(user)
