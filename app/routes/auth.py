@@ -25,11 +25,13 @@ class User(BaseModel):
     email: Optional[str] = None
     pw: Optional[str] = None
     status: str = None
+    disabled: Optional[bool] = None
 
     model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
     Authorization_token: str 
+    token_type : str
 
 async def is_email_exist_session(session: Session, email: str)-> bool:
     obtained_email: Optional[str] = UserORM.get_by_column(session=session, email=email)
