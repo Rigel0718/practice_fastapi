@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
 import jwt
+from datetime import datetime, timedelta
+
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
