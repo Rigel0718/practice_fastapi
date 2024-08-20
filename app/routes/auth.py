@@ -64,9 +64,9 @@ def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minut
 async def register(reg_user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
     is_exist: bool = await is_email_exist_session(session, reg_user_info.email)
     if not reg_user_info.email or not reg_user_info.pw:
-        HTTPException(status_code=400, detail="Email and pw NOT provided")
+        raise HTTPException(status_code=400, detail="Email and pw NOT provided")
     if is_exist:
-        HTTPException(status_code=400, detail="Email is already exist!!")
+        raise HTTPException(status_code=400, detail="Email is already exist!!")
         
     hashed_pw = generated_pw_hashed(reg_user_info.pw)
     new_user : UserORM = UserORM.build_and_add(session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
