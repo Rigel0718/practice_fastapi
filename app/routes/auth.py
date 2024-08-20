@@ -43,7 +43,7 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
         return False
     return True
 
-def generated_pw_hashed(plain_pw: str) -> str:
+def generated_hashed_pw(plain_pw: str) -> str:
     return pw_context.hash(plain_pw)
 
 def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
@@ -68,7 +68,7 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
     if is_exist:
         raise HTTPException(status_code=400, detail="Email is already exist!!")
         
-    hashed_pw = generated_pw_hashed(reg_user_info.pw)
+    hashed_pw = generated_hashed_pw(reg_user_info.pw)
     new_user : UserORM = UserORM.build_and_add(session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : User = orm2schema(new_user)
     session.commit()
