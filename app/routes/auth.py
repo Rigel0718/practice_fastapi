@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.orm_models import get_db
 from database import orm_models
-from typing import Optional
+from typing import Optional, Annotated
 from pydantic import EmailStr, BaseModel, ConfigDict
 from starlette.responses import JSONResponse
 from dotenv import load_dotenv
@@ -51,7 +51,7 @@ def create_auth_token(user_data: dict) -> str:
     return jwt_encode
 
 @router.post("/register", status_code=201, response_model=Token)
-async def register(reg_user_info: RegisterUserInform, session: Session = Depends(get_db)):
+async def register(reg_user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
     is_exist: bool = await is_email_exist_session(session, reg_user_info.email)
     if not reg_user_info.email or not reg_user_info.pw:
         HTTPException(status_code=400, detail="Email and pw NOT provided")
@@ -68,7 +68,7 @@ async def register(reg_user_info: RegisterUserInform, session: Session = Depends
     return token
 
 @router.post("/login", status_code=200, response_model=Token)
-async def login(user_info: RegisterUserInform, session: Session = Depends(get_db)):
+async def login(user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
     is_exist: bool = await is_email_exist_session(session, user_info.email)
     if not user_info.email or not user_info.pw:
         raise HTTPException(status_code=400 , detail="Email and PW must be provied")
