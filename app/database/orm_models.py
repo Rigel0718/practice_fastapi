@@ -57,7 +57,7 @@ class Base(DeclarativeBase):
 
 
 
-class User(Base):
+class OrmUser(Base):
     __tablename__ = "users"
     id : Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     name : Mapped[str] = mapped_column(String(255), nullable=True)
@@ -78,5 +78,5 @@ if __name__  == "__main__":
     ]
     with get_db() as session:
         for user_info in example_users:
-            User.build_and_add(**user_info)
+            OrmUser.build_and_add(**user_info)
         
