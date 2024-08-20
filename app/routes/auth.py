@@ -7,8 +7,7 @@ from pydantic import EmailStr, BaseModel, ConfigDict
 from starlette.responses import JSONResponse
 from dotenv import load_dotenv
 import os
-import bcrypt
-import jwt
+from passlib.context import CryptContext
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -20,7 +19,7 @@ class RegisterUserInform(BaseModel):
     email: EmailStr = None
     pw : str = None
 
-class UserToken(BaseModel):   # 이런 요소들을 Enum에서 한번에 관리해야겠다.. 중복했다가 실수할 확률 높음
+class UserToken(BaseModel):
     id: int = None
     name: Optional[str] = None
     email: Optional[str] = None
@@ -38,16 +37,16 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
         return False
     return True
 
-def generated_pw_hashed(pw: str):
-    return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
+# def generated_pw_hashed(pw: str):
+#     return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
 
-def check_match_pw(hashed_pw: str, pw: str) -> bool:
-    return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw.encode("utf-8"))
+# def check_match_pw(hashed_pw: str, pw: str) -> bool:
+#     return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw.encode("utf-8"))
 
-def create_auth_token(user_data: dict) -> str:
-    _encode = user_data.copy()
-    jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return jwt_encode
+# def create_auth_token(user_data: dict) -> str:
+#     _encode = user_data.copy()
+#     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+#     return jwt_encode
 
 @router.post("/register", status_code=201, response_model=Token)
 async def register(reg_user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
@@ -57,7 +56,7 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
     if is_exist:
         HTTPException(status_code=400, detail="Email is already exist!!")
         
-    hashed_pw = generated_pw_hashed(reg_user_info.pw)
+    hashed_pw = CryptContext(reg_user_info.pw)
     new_added_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : UserToken = UserToken.model_validate(new_added_user)
     session.commit()
