@@ -49,8 +49,10 @@ def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
 
 def orm2schema(new_user: orm_models.User) -> UserToken:
     return UserToken.model_validate(new_user)
-def create_auth_token(user_data: dict) -> str:
-    _encode = user_data.copy()
+
+def create_auth_token(user_data: UserToken) -> str:
+    _user_data_dict = user_data.model_dump(exclude={'pw'})
+    _encode = _user_data_dict.copy()
     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return jwt_encode
 
@@ -66,7 +68,7 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
     new_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : UserToken = orm2schema(new_user)
     session.commit()
-    user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
+    user_token_instance: str = create_auth_token(usertoken_model)
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
     return token
 
@@ -81,7 +83,7 @@ async def login(user_info: RegisterUserInform, session: Annotated[Session, Depen
     if not check_match_pw(hashed_pw=user.pw, pw=user_info.pw):
         raise HTTPException(status_code=401, detail="No Match Users")
     
-    usertoken_model: UserToken = UserToken.model_validate(user)
-    user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
+    usertoken_model: UserToken = orm2schema(user)
+    user_token_instance: str = create_auth_token(usertoken_model)
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
     return token
