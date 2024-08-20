@@ -46,6 +46,8 @@ def generated_pw_hashed(plain_pw: str) -> str:
 def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
     return pwd_context.verify(plain_pw, hashed_pw)
 
+def orm2schema(new_user: orm_models.User) -> UserToken:
+    return UserToken.model_validate(new_user)
 # def create_auth_token(user_data: dict) -> str:
 #     _encode = user_data.copy()
 #     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
@@ -60,8 +62,8 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
         HTTPException(status_code=400, detail="Email is already exist!!")
         
     hashed_pw = CryptContext(reg_user_info.pw)
-    new_added_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
-    usertoken_model : UserToken = UserToken.model_validate(new_added_user)
+    new_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
+    usertoken_model : UserToken = orm2schema(new_user)
     session.commit()
     user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
