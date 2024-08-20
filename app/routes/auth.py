@@ -14,7 +14,7 @@ load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/auth", tags=['auth'])
 
 class RegisterUserInform(BaseModel):
     email: EmailStr = None
