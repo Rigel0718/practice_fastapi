@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security.oauth2 import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database.orm_models import get_db
 from database import orm_models
@@ -37,11 +37,14 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
         return False
     return True
 
-# def generated_pw_hashed(pw: str):
-#     return bcrypt.hashpw(pw.encode("utf-8"), bcrypt.gensalt())
+pwd_context = CryptContext(schemes=["bcrypt"])
+oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# def check_match_pw(hashed_pw: str, pw: str) -> bool:
-#     return bcrypt.checkpw(pw.encode("utf-8"), hashed_pw.encode("utf-8"))
+def generated_pw_hashed(plain_pw: str) -> str:
+    return pwd_context.hash(plain_pw)
+
+def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
+    return pwd_context.verify(plain_pw, hashed_pw)
 
 # def create_auth_token(user_data: dict) -> str:
 #     _encode = user_data.copy()
