@@ -4,7 +4,6 @@ from database.orm_models import get_db
 from database import orm_models
 from typing import Optional, Annotated
 from pydantic import EmailStr, BaseModel, ConfigDict
-from starlette.responses import JSONResponse
 from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
