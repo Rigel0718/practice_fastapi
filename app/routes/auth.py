@@ -34,7 +34,6 @@ class Token(BaseModel):
 
 async def is_email_exist_session(session: Session, email: str)-> bool:
     obtained_email: Optional[str] = orm_models.User.get_by_column(session=session, email=email)
-
     if obtained_email is None:
         return False
     return True
@@ -59,7 +58,6 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
         HTTPException(status_code=400, detail="Email is already exist!!")
         
     hashed_pw = generated_pw_hashed(reg_user_info.pw)
-    
     new_added_user : orm_models.User = orm_models.User.build_and_add(session=session,email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : UserToken = UserToken.model_validate(new_added_user)
     session.commit()
@@ -77,7 +75,8 @@ async def login(user_info: RegisterUserInform, session: Annotated[Session, Depen
     user: Optional[orm_models.User] = orm_models.User.get_by_email(session=session, email=user_info.email) 
     if not check_match_pw(hashed_pw=user.pw, pw=user_info.pw):
         raise HTTPException(status_code=401, detail="No Match Users")
-    usertoken_model : UserToken = UserToken.model_validate(user)
+    
+    usertoken_model: UserToken = UserToken.model_validate(user)
     user_token_instance: str = create_auth_token(usertoken_model.model_dump(exclude={'pw'}))
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
     return token
