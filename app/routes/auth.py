@@ -16,6 +16,7 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 router = APIRouter(prefix="/auth", tags=['auth'])
+pw_context = CryptContext(schemes=["bcrypt"])
 
 class RegisterUserInform(BaseModel):
     name : str
@@ -42,13 +43,11 @@ async def is_email_exist_session(session: Session, email: str)-> bool:
         return False
     return True
 
-pwd_context = CryptContext(schemes=["bcrypt"])
-
 def generated_pw_hashed(plain_pw: str) -> str:
-    return pwd_context.hash(plain_pw)
+    return pw_context.hash(plain_pw)
 
 def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
-    return pwd_context.verify(plain_pw, hashed_pw)
+    return pw_context.verify(plain_pw, hashed_pw)
 
 def orm2schema(new_user: UserORM) -> User:
     return User.model_validate(new_user)
