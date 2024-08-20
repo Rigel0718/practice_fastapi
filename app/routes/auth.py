@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database.orm_models import get_db
@@ -8,6 +8,7 @@ from pydantic import EmailStr, BaseModel, ConfigDict
 from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
+import jwt
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -48,10 +49,10 @@ def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
 
 def orm2schema(new_user: orm_models.User) -> UserToken:
     return UserToken.model_validate(new_user)
-# def create_auth_token(user_data: dict) -> str:
-#     _encode = user_data.copy()
-#     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-#     return jwt_encode
+def create_auth_token(user_data: dict) -> str:
+    _encode = user_data.copy()
+    jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt_encode
 
 @router.post("/register", status_code=201, response_model=Token)
 async def register(reg_user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
