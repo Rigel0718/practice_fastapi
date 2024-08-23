@@ -12,3 +12,10 @@ def get_by_column(cls: Type[T], session: Session,**kwargs) -> Optional[T]:
             stmt = stmt.filter(column==value)
         result = session.execute(stmt)
         return result.scalars().first()
+
+
+def get_by_email(cls: Type[T], session: Session, email: str) -> Optional[T]:
+        column = getattr(cls, 'email')
+        stmt = select(cls).filter(column==email)
+        result = session.execute(stmt)
+        return result.scalars().first()
