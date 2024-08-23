@@ -9,6 +9,7 @@ import os
 from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
+from database.schema import RegisterUserInform, User, Token
 
 
 load_dotenv(verbose=True)
@@ -17,25 +18,6 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 router = APIRouter(prefix="/auth", tags=['auth'])
 pw_context = CryptContext(schemes=["bcrypt"])
-
-class RegisterUserInform(BaseModel):
-    name : str
-    email: EmailStr = None
-    pw : str = None
-
-class User(BaseModel):
-    id: int = None
-    name: Optional[str] = None
-    email: Optional[str] = None
-    pw: Optional[str] = None
-    status: str = None
-    disabled: Optional[bool] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-class Token(BaseModel):
-    Authorization_token: str 
-    token_type : str = "bearer"
 
 async def is_email_exist_session(session: Session, email: str)-> bool:
     obtained_email: Optional[str] = UserORM.get_by_column(session=session, email=email)
