@@ -19,3 +19,13 @@ def get_by_email(cls: Type[T], session: Session, email: str) -> Optional[T]:
         stmt = select(cls).filter(column==email)
         result = session.execute(stmt)
         return result.scalars().first()
+
+def build_and_add(cls: Type[T], session: Session,**kwargs) -> T:
+        obj = cls()
+        for column in obj.all_columns():
+            column_name = column.name
+            if column_name in kwargs:
+                setattr(obj, column_name, kwargs.get(column_name))
+        session.add(obj)
+        session.flush() 
+        return obj
