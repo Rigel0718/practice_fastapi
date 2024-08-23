@@ -44,7 +44,6 @@ def build_ORM_by_schema(orm_model: UserORM, session: Session, **kwargs):
             setattr(orm_model_instance, column_name, kwargs.get(column_name))
     return orm_model_instance
 
-        
 
 def commit_orm2db(orm_model: UserORM, session: Session):
     session.add(orm_model)
