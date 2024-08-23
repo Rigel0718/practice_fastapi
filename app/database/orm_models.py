@@ -25,34 +25,7 @@ class Base(DeclarativeBase):
 
     def all_columns(self):
         return [c for c in self.__table__.columns if c.primary_key is False and c.name != "created_at"]
-
-    @classmethod
-    def get_by_column(cls: Type[T], session: Session,**kwargs) -> Optional[T]:
-        stmt = select(cls)
-        for key, value in kwargs.items():
-            column = getattr(cls, key)
-            stmt = stmt.filter(column==value)
-        result = session.execute(stmt)
-        return result.scalars().first()
     
-    @classmethod
-    def get_by_email(cls: Type[T], session: Session, email: str) -> Optional[T]:
-        column = getattr(cls, 'email')
-        stmt = select(cls).filter(column==email)
-        result = session.execute(stmt)
-        return result.scalars().first()
-    
-    @classmethod
-    def build_and_add(cls: Type[T], session: Session,**kwargs) -> T:
-        obj = cls()
-        for column in obj.all_columns():
-            column_name = column.name
-            if column_name in kwargs:
-                setattr(obj, column_name, kwargs.get(column_name))
-        session.add(obj)
-        session.flush() 
-        return obj
-
 
 
 class UserORM(Base):
