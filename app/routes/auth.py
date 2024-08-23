@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from database.orm_models import get_db, UserORM
+from database.orm_models import UserORM
 from typing import Optional, Annotated
 from dotenv import load_dotenv
 import os
@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
 from database.schema import RegisterUserInform, User, Token
-from operators.orm_operators import get_by_email, build_and_add
+from operators.orm_operators import get_by_email, build_and_add, get_db
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -33,6 +33,16 @@ def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
 def orm2schema(new_user: UserORM) -> User:
     return User.model_validate(new_user)
 
+def schema2dict(schema: User, exclude: dict=None):
+    return schema.model_dump(exclude=exclude)
+
+def commit_orm2db(orm_model: UserORM, session: Session):
+    session.add(orm_model)
+    session.commit()
+    session.refresh(orm_model)
+    return orm_model
+
+
 def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minutes=15)) -> str:
     _user_data_dict = user_data.model_dump(exclude={'pw'})
     expire_time = datetime.now(timezone.utc) + expiered_delta
@@ -50,6 +60,7 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
         raise HTTPException(status_code=400, detail="Email is already exist!!")
         
     hashed_pw = generated_hashed_pw(reg_user_info.pw)
+    reg_user_info.pw = hashed_pw
     new_user : UserORM = build_and_add(UserORM, session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : User = orm2schema(new_user)
     session.commit()
