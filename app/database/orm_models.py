@@ -1,12 +1,10 @@
 from typing import Generator, Type, Optional, TypeVar
-from sqlalchemy import create_engine, Integer, Text, Enum, Boolean, ForeignKey, String
+from sqlalchemy import create_engine, Integer, Enum, Boolean, ForeignKey, String, select
 from database.db_config import DB_URL 
 from sqlalchemy.orm import sessionmaker, relationship, Mapped, DeclarativeBase, Session, mapped_column
 from sqlalchemy.future import select
 import sys
 from os import path
-# TODO 
-# future module is legacy ... so change it to sqlalchemy 2.0 
 
 engine = create_engine(DB_URL, echo=True, pool_recycle=900)
 Session_local = sessionmaker(autoflush=True, bind=engine)
