@@ -3,7 +3,6 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database.orm_models import get_db, UserORM
 from typing import Optional, Annotated
-from pydantic import EmailStr, BaseModel, ConfigDict
 from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
