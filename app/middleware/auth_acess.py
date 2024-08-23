@@ -4,17 +4,7 @@ import jwt
 from dotenv import load_dotenv
 import os
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
-
-class User(BaseModel):
-    id: int = None
-    name: Optional[str] = None
-    email: Optional[str] = None
-    pw: Optional[str] = None
-    status: str = None
-    disabled: Optional[bool] = None
-
-    model_config = ConfigDict(from_attributes=True)
+from database.schema import User
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
