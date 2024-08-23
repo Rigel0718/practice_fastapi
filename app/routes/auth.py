@@ -33,7 +33,7 @@ def check_match_pw(hashed_pw: str, plain_pw: str) -> bool:
 def orm2schema(new_user: UserORM) -> User:
     return User.model_validate(new_user)
 
-def schema2dict(schema: User, exclude: dict=None):
+def schema2dict(schema: User, exclude=None):
     return schema.model_dump(exclude=exclude)
 
 def commit_orm2db(orm_model: UserORM, session: Session):
@@ -44,7 +44,8 @@ def commit_orm2db(orm_model: UserORM, session: Session):
 
 
 def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minutes=15)) -> str:
-    _user_data_dict = user_data.model_dump(exclude={'pw'})
+    # _user_data_dict = user_data.model_dump(exclude={'pw'})
+    _user_data_dict = schema2dict(user_data, exclude={'pw'})
     expire_time = datetime.now(timezone.utc) + expiered_delta
     _user_data_dict.update({"exp" : expire_time})
     _encode = _user_data_dict.copy()
@@ -59,11 +60,11 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
     if is_exist:
         raise HTTPException(status_code=400, detail="Email is already exist!!")
         
-    hashed_pw = generated_hashed_pw(reg_user_info.pw)
-    reg_user_info.pw = hashed_pw
-    new_user : UserORM = build_and_add(UserORM, session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
+    reg_user_info.pw = generated_hashed_pw(reg_user_info.pw)
+    new_user = schema2dict(reg_user_info)
+    print(new_user)
+    new_user = commit_orm2db(UserORM(**schema2dict(reg_user_info)))
     usertoken_model : User = orm2schema(new_user)
-    session.commit()
     user_token_instance: str = create_auth_token(usertoken_model)
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
     return token
