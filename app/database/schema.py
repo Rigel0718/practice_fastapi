@@ -2,7 +2,7 @@ from pydantic import EmailStr, BaseModel, ConfigDict
 from typing import Optional
 
 class RegisterUserInform(BaseModel):
-    name : str
+    name : str = None
     email: EmailStr = None
     pw : str = None
 

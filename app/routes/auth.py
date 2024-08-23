@@ -36,6 +36,16 @@ def orm2schema(new_user: UserORM) -> User:
 def schema2dict(schema: User, exclude=None):
     return schema.model_dump(exclude=exclude)
 
+def build_ORM_by_schema(orm_model: UserORM, session: Session, **kwargs):
+    orm_model_instance = orm_model()
+    for column in orm_model_instance.all_columns():
+        column_name = column.name
+        if column_name in kwargs:
+            setattr(orm_model_instance, column_name, kwargs.get(column_name))
+    return orm_model_instance
+
+        
+
 def commit_orm2db(orm_model: UserORM, session: Session):
     session.add(orm_model)
     session.commit()
@@ -61,9 +71,8 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
         raise HTTPException(status_code=400, detail="Email is already exist!!")
         
     reg_user_info.pw = generated_hashed_pw(reg_user_info.pw)
-    new_user = schema2dict(reg_user_info)
-    print(new_user)
-    new_user = commit_orm2db(UserORM(**schema2dict(reg_user_info)))
+    new_user_orm = build_ORM_by_schema(UserORM, session, **schema2dict(reg_user_info))
+    new_user = commit_orm2db(new_user_orm, session)
     usertoken_model : User = orm2schema(new_user)
     user_token_instance: str = create_auth_token(usertoken_model)
     token = Token(Authorization_token=f'Bearer {user_token_instance}')
