@@ -6,6 +6,8 @@ class RegisterUserInform(BaseModel):
     email: EmailStr = None
     pw : str = None
 
+    model_config = ConfigDict(from_attributes=True)
+
 class User(BaseModel):
     id: int = None
     name: Optional[str] = None
