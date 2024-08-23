@@ -9,12 +9,7 @@ from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
 from database.schema import RegisterUserInform, User, Token
-from operators.orm_operators import(
-    get_by_column,
-    get_by_email,
-    build_and_add
-)
-
+from operators.orm_operators import get_by_email, build_and_add
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -24,7 +19,7 @@ router = APIRouter(prefix="/auth", tags=['auth'])
 pw_context = CryptContext(schemes=["bcrypt"])
 
 async def is_email_exist_session(session: Session, email: str)-> bool:
-    obtained_email: Optional[str] = UserORM.get_by_column(session=session, email=email)
+    obtained_email: Optional[str] = get_by_email(UserORM, session=session, email=email)
     if obtained_email is None:
         return False
     return True
@@ -55,7 +50,7 @@ async def register(reg_user_info: RegisterUserInform, session: Annotated[Session
         raise HTTPException(status_code=400, detail="Email is already exist!!")
         
     hashed_pw = generated_hashed_pw(reg_user_info.pw)
-    new_user : UserORM = UserORM.build_and_add(session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
+    new_user : UserORM = build_and_add(UserORM, session=session, name= reg_user_info.name, email=reg_user_info.email, pw=hashed_pw) #kwargs를 Enum으로 바꿔야할듯
     usertoken_model : User = orm2schema(new_user)
     session.commit()
     user_token_instance: str = create_auth_token(usertoken_model)
@@ -71,7 +66,7 @@ async def login(user_info: Annotated[OAuth2PasswordRequestForm, Depends()], sess
         raise HTTPException(status_code=400 , detail="Email and PW must be provied")
     if not is_exist:
         raise HTTPException(status_code=400, detail="No Match Users")
-    user: Optional[UserORM] = UserORM.get_by_email(session=session, email=entered_email) 
+    user: Optional[UserORM] = get_by_email(UserORM, session=session, email=entered_email) 
     if not check_match_pw(hashed_pw=user.pw, plain_pw=entered_pw):
         raise HTTPException(status_code=401, detail="No Match Users")
     
