@@ -9,6 +9,11 @@ from passlib.context import CryptContext
 import jwt
 from datetime import datetime, timedelta, timezone
 from database.schema import RegisterUserInform, User, Token
+from operators.orm_operators import(
+    get_by_column,
+    get_by_email,
+    build_and_add
+)
 
 
 load_dotenv(verbose=True)

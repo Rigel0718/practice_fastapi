@@ -1,9 +1,18 @@
-from typing import Optional, TypeVar, Type
+from typing import Optional, TypeVar, Type, Generator
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from database.orm_models import Base
+from database.orm_models import Session_local
 
 T = TypeVar("T", bound="Base")
+
+def get_db() -> Generator[Session, None, None]:
+    local_session = Session_local()
+    try:
+        yield local_session
+    finally:
+        local_session.close()
+
 
 def get_by_column(cls: Type[T], session: Session,**kwargs) -> Optional[T]:
         stmt = select(cls)
