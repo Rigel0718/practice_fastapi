@@ -3,6 +3,8 @@ from database.orm_models import UserORM
 from database.schema import RegisterUserInform, User, Token
 from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
+from typing import Optional
+from operators.orm_operators import get_by_email
 from dotenv import load_dotenv
 import os
 import jwt
@@ -13,6 +15,12 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 
 pw_context = CryptContext(schemes=["bcrypt"])
+
+async def is_email_exist_session(session: Session, email: str)-> bool:
+    obtained_email: Optional[str] = get_by_email(UserORM, session=session, email=email)
+    if obtained_email is None:
+        return False
+    return True
 
 def generated_hashed_pw(plain_pw: str) -> str:
     return pw_context.hash(plain_pw)
