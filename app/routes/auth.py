@@ -36,7 +36,7 @@ def orm2schema(new_user: UserORM) -> User:
 def schema2dict(schema: User, exclude=None):
     return schema.model_dump(exclude=exclude)
 
-def build_ORM_by_schema(orm_model: UserORM, session: Session, **kwargs):
+def build_ORM_by_schema(orm_model: UserORM, **kwargs):
     orm_model_instance = orm_model()
     for column in orm_model_instance.all_columns():
         column_name = column.name
