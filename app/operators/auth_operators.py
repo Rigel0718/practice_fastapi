@@ -2,9 +2,6 @@ from passlib.context import CryptContext
 from database.orm_models import UserORM
 from database.schema import RegisterUserInform, User, Token
 from datetime import datetime, timedelta, timezone
-from sqlalchemy.orm import Session
-from typing import Optional
-from operators.orm_operators import get_by_email
 from dotenv import load_dotenv
 import os
 import jwt
@@ -13,14 +10,8 @@ load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
-
 pw_context = CryptContext(schemes=["bcrypt"])
 
-async def is_email_exist_session(session: Session, email: str)-> bool:
-    obtained_email: Optional[str] = get_by_email(UserORM, session=session, email=email)
-    if obtained_email is None:
-        return False
-    return True
 
 def generated_hashed_pw(plain_pw: str) -> str:
     return pw_context.hash(plain_pw)
@@ -41,12 +32,6 @@ def build_ORM_by_schema(orm_model: UserORM, **kwargs):
         if column_name in kwargs:
             setattr(orm_model_instance, column_name, kwargs.get(column_name))
     return orm_model_instance
-
-def commit_orm2db(orm_model: UserORM, session: Session):
-    session.add(orm_model)
-    session.commit()
-    session.refresh(orm_model)
-    return orm_model
 
 def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minutes=15)) -> str:
     _user_data_dict = schema2dict(user_data, exclude={'pw'})

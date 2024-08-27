@@ -2,6 +2,7 @@ from typing import Optional, TypeVar, Type, Generator
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from database.orm_models import Base
+from database.orm_models import UserORM
 from database.orm_models import Session_local
 
 T = TypeVar("T", bound="Base")
@@ -38,3 +39,15 @@ def build_and_add(cls: Type[T], session: Session,**kwargs) -> Type[T]:
         session.add(obj)
         session.flush() 
         return obj
+
+def commit_orm2db(orm_model: UserORM, session: Session):
+    session.add(orm_model)
+    session.commit()
+    session.refresh(orm_model)
+    return orm_model
+
+async def is_email_exist_session(session: Session, email: str)-> bool:
+    obtained_email: Optional[str] = get_by_email(UserORM, session=session, email=email)
+    if obtained_email is None:
+        return False
+    return True
