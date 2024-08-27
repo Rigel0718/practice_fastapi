@@ -3,13 +3,8 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from database.orm_models import UserORM
 from typing import Optional, Annotated
-from dotenv import load_dotenv
-import os
-from passlib.context import CryptContext
-import jwt
-from datetime import datetime, timedelta, timezone
 from database.schema import RegisterUserInform, User, Token
-from operators.orm_operators import get_by_email, build_and_add, get_db
+from operators.orm_operators import get_by_email, get_db
 from operators.auth_operators import (
     is_email_exist_session,
     generated_hashed_pw,
