@@ -38,10 +38,10 @@ def build_ORM_by_schema(orm_model: UserORM, **kwargs):
     return orm_model_instance
 
 def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minutes=15)) -> str:
-    _user_data_dict = schema2dict(user_data, exclude={'pw'})
+    payload = schema2dict(user_data, exclude={'pw'})
     expire_time = datetime.now(timezone.utc) + expiered_delta
-    _user_data_dict.update({"exp" : expire_time})
-    _encode = _user_data_dict.copy()
+    payload.update({"exp" : expire_time})
+    _encode = payload.copy()
     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return jwt_encode
 
