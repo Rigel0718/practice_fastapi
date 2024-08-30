@@ -3,6 +3,9 @@ from database.orm_models import UserORM
 from database.schema import RegisterUserInform, User, Token
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends
+from typing import Annotated
 import os
 import jwt
 
@@ -11,6 +14,7 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 pw_context = CryptContext(schemes=["bcrypt"])
+oauth2scheme = OAuth2PasswordBearer(tokenUrl='/auth/login')
 
 
 def generated_hashed_pw(plain_pw: str) -> str:
@@ -40,3 +44,7 @@ def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minut
     _encode = _user_data_dict.copy()
     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return jwt_encode
+
+def get_current_user(token: Annotated[str, Depends(oauth2scheme)]):
+
+    ...
