@@ -8,6 +8,7 @@ from fastapi import Depends
 from typing import Annotated
 import os
 import jwt
+from jose import JWTError
 
 load_dotenv(verbose=True)
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -45,6 +46,20 @@ def create_auth_token(user_data: User, expiered_delta: timedelta=timedelta(minut
     jwt_encode = jwt.encode(_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return jwt_encode
 
-def get_current_user(token: Annotated[str, Depends(oauth2scheme)]):
+def get_token_payload(token: str) -> dict:
+    try:
+        payload: dict = jwt.decode(token, JWT_SECRET, algorithms=JWT_ALGORITHM)
+    except JWTError:
+        return None
+    return payload
 
+
+def get_current_user(token: Annotated[str, Depends(oauth2scheme)]):
+    payload: dict = get_token_payload(token)
+    if (not payload) or (type(payload) is not dict) :
+        return None
+    
+    user_email = payload.get('email', None)
+    
     ...
+
