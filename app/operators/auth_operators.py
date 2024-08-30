@@ -5,7 +5,9 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends
-from typing import Annotated
+from typing import Annotated, Optional
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 import os
 import jwt
 from jose import JWTError
@@ -54,12 +56,16 @@ def get_token_payload(token: str) -> dict:
     return payload
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2scheme)]):
-    payload: dict = get_token_payload(token)
+def get_current_user(token: Annotated[str, Depends(oauth2scheme)], session: Session) -> Optional[UserORM]:
+    payload: Optional[dict] = get_token_payload(token)
     if (not payload) or (type(payload) is not dict) :
         return None
     
-    user_email = payload.get('email', None)
+    user_email: Optional[str] = payload.get('email', None)
+    if not user_email:
+        return None
     
-    ...
+    stmt = select(UserORM).filter(UserORM.email==user_email)
+    user: UserORM = session.execute(stmt).scalars().first()
+    return user
 
