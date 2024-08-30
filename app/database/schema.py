@@ -19,5 +19,5 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class Token(BaseModel):
-    Authorization_token: str 
+    Authorization: str 
     token_type : str = "Bearer"

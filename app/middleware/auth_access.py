@@ -30,7 +30,7 @@ class JWTAuthBackend(AuthenticationBackend):
         if "Authorization_token" not in conn.headers:
             return guest
         
-        auth = conn.headers["Authorization_token"]
+        auth = conn.headers["Authorization"]
         try:
             scheme, token = auth.split()
             if scheme != "Bearer":
