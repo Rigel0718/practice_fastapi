@@ -4,9 +4,8 @@ from fastapi import FastAPI, Request
 import jwt
 from dotenv import load_dotenv
 import os
-from typing import Optional, Tuple
 from database.schema import User
-
+from operators.auth_operators import get_current_user
 from starlette.authentication import BaseUser, UnauthenticatedUser, SimpleUser, AuthenticationError, AuthCredentials, AuthenticationBackend
 
 load_dotenv(verbose=True)
@@ -33,9 +32,19 @@ class JWTAuthBackend(AuthenticationBackend):
         
         auth = conn.headers["Authorization_token"]
         try:
-            scheme, credentials = auth.split()
+            scheme, token = auth.split()
             if scheme != "Bearer":
                 return guest
         except ValueError:
             AuthenticationError("Invalid bearer auth credentials")
+
+        if not token :
+            return guest
+        
+        user = get_current_user(token)
+
+        if not user :
+            return guest
+        
+        return AuthCredentials('authenticated'), user
         

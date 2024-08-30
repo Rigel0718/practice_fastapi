@@ -8,6 +8,7 @@ from fastapi import Depends
 from typing import Annotated, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from operators.orm_operators import get_db
 import os
 import jwt
 from jose import JWTError
@@ -56,7 +57,7 @@ def get_token_payload(token: str) -> dict:
     return payload
 
 
-def get_current_user(token: Annotated[str, Depends(oauth2scheme)], session: Session) -> Optional[UserORM]:
+def get_current_user(token: Annotated[str, Depends(oauth2scheme)], session: Annotated[Session, Depends(get_db)]) -> Optional[UserORM]:
     payload: Optional[dict] = get_token_payload(token)
     if (not payload) or (type(payload) is not dict) :
         return None
