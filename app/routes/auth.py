@@ -19,9 +19,7 @@ from operators.auth_operators import (
     create_auth_token
 )
 
-
 router = APIRouter(prefix="/auth", tags=['auth'])
-
 
 @router.post("/register", status_code=201, response_model=Token)
 async def register(reg_user_info: RegisterUserInform, session: Annotated[Session, Depends(get_db)]):
