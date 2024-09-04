@@ -25,9 +25,11 @@ class JWTACCESSMIDDLEware(BaseHTTPMiddleware):
 
 class JWTAuthBackend(AuthenticationBackend): 
     async def authenticate(self, conn): 
+        print("HI_EEEEEEEEEEEEEEEE")
         guest = AuthCredentials(["unauthenticated"]), UnauthenticatedUser()
 
-        if "Authorization_token" not in conn.headers:
+        if "Authorization" not in conn.headers:
+            print(guest)
             return guest
         
         auth = conn.headers["Authorization"]
@@ -45,6 +47,8 @@ class JWTAuthBackend(AuthenticationBackend):
 
         if not user :
             return guest
-        
+        print("DDDDDDDDDDDDDDDDDDDDDDDFFFFFFF")
+        print(AuthCredentials('authenticated'), user)
+        print("DFFFFFFFFFGFRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
         return AuthCredentials('authenticated'), user
         
