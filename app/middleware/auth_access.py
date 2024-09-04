@@ -34,7 +34,7 @@ class JWTAuthBackend(AuthenticationBackend):
         
         auth = conn.headers["Authorization"]
         try:
-            scheme, token = auth.split()
+            scheme, token = auth.split(' ')
             if scheme != "Bearer":
                 return guest
         except ValueError:
